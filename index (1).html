@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Veterinaria</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#138a55">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Veterinaria">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root {
+  --bg: #f6f8f7;
+  --card: #ffffff;
+  --text: #1b1f1d;
+  --muted: #5d6762;
+  --line: #d5dcd8;
+  --primary: #138a55;
+  --on-primary: #ffffff;
+  --primary-soft: #e0f3ea;
+  --danger: #b3261e;
+  --danger-soft: #fbe9e7;
+  --radius: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111413;
+    --card: #1b1f1d;
+    --text: #e8ece9;
+    --muted: #9aa5a0;
+    --line: #333a37;
+    --primary: #4cd98b;
+    --on-primary: #06281a;
+    --primary-soft: #1d3a2d;
+    --danger: #ffb4ab;
+    --danger-soft: #3b1f1c;
+  }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(68px + env(safe-area-inset-bottom));
+}
+main { max-width: 640px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 1.5rem; margin: 4px 0 12px; }
+h2 { font-size: 1.1rem; margin: 20px 0 8px; }
+
+/* ---------- formularios ---------- */
+.campo { display: block; margin-top: 14px; }
+.campo > span, legend { display: block; font-size: .85rem; font-weight: 600; color: var(--muted); margin-bottom: 4px; padding: 0; }
+input[type=text], input[type=number], input[type=date], textarea {
+  width: 100%;
+  font: inherit; font-size: 16px; /* 16px evita el zoom automático en iPhone */
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 11px 12px;
+  appearance: none; -webkit-appearance: none;
+}
+input[type=date] { min-height: 46px; }
+textarea { resize: vertical; min-height: 84px; }
+input:focus, textarea:focus { outline: 2px solid var(--primary); outline-offset: 0; border-color: transparent; }
+input[aria-invalid=true], textarea[aria-invalid=true] { border-color: var(--danger); }
+.fila2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+fieldset { border: 0; margin: 14px 0 0; padding: 0; min-width: 0; }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 2px 0; cursor: pointer; }
+.opt input { width: 22px; height: 22px; margin: 0; accent-color: var(--primary); flex: none; }
+.sub { margin-left: 16px; padding-left: 12px; border-left: 3px solid var(--primary-soft); }
+.err { display: block; color: var(--danger); font-size: .8rem; margin-top: 4px; }
+.err[hidden] { display: none; }
+.sep { height: 1px; background: var(--line); margin: 18px 0 2px; border: 0; }
+
+/* ---------- botones ---------- */
+button {
+  font: inherit; font-weight: 600;
+  border-radius: 999px;
+  padding: 11px 20px;
+  border: 1px solid var(--primary);
+  background: var(--primary); color: var(--on-primary);
+  cursor: pointer;
+}
+button.sec { background: transparent; color: var(--primary); }
+button.txt { background: transparent; border-color: transparent; color: var(--primary); padding: 8px 10px; }
+button.peligro { background: transparent; border-color: transparent; color: var(--danger); padding: 8px 10px; }
+button:disabled { opacity: .4; cursor: not-allowed; }
+button:active:not(:disabled) { transform: scale(.98); }
+.acciones { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0 8px; }
+
+/* ---------- lista ---------- */
+.barra { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 12px; }
+.tarjeta {
+  display: flex; gap: 8px; align-items: flex-start;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 12px 12px 12px 14px; margin: 8px 0; cursor: pointer;
+}
+.tarjeta .info { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tarjeta .nombre { font-weight: 700; font-size: 1.05rem; }
+.alerta { color: var(--danger); font-weight: 600; }
+.vacio { color: var(--muted); }
+details.respaldo { margin-top: 28px; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 10px 14px; }
+details.respaldo summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+details.respaldo p { color: var(--muted); font-size: .9rem; margin: 6px 0; }
+
+/* ---------- importar ---------- */
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 4px 14px 10px; margin: 6px 0 14px; }
+.panel h2 { margin-top: 12px; }
+.panel .opt small { color: var(--muted); }
+.panel .nueva { color: var(--primary); font-weight: 600; }
+
+/* ---------- detalle ---------- */
+.dato { padding: 8px 0; }
+.dato .t { font-size: .8rem; font-weight: 600; color: var(--primary); }
+.dato .v { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* ---------- barra inferior ---------- */
+nav {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: var(--card); border-top: 1px solid var(--line);
+  display: flex; justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+nav a {
+  flex: 1; max-width: 320px; text-align: center; text-decoration: none;
+  color: var(--muted); padding: 8px 4px 9px; font-size: .78rem; font-weight: 600;
+}
+nav a .ico { display: block; font-size: 1.35rem; line-height: 1.2; }
+nav a.activa { color: var(--primary); }
+
+#aviso {
+  position: fixed; left: 50%; bottom: calc(84px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(20px);
+  background: #26312c; color: #fff; padding: 10px 18px; border-radius: 999px;
+  opacity: 0; pointer-events: none; transition: .25s; z-index: 10; max-width: 90vw; text-align: center;
+}
+#aviso.ver { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<main id="app"></main>
+<nav>
+  <a href="#/ingreso" id="nav-ingreso"><span class="ico">＋</span>Ingreso</a>
+  <a href="#/mascotas" id="nav-mascotas"><span class="ico">☰</span>Mascotas</a>
+</nav>
+<div id="aviso" role="status" aria-live="polite"></div>
+
+<script>
+'use strict';
+
+/* =====================================================================
+   Base de datos local (IndexedDB): los datos quedan guardados en el teléfono
+   ===================================================================== */
+const DB_NOMBRE = 'veterinaria';
+const STORE = 'mascotas';
+let db;
+
+function abrirDB() {
+  return new Promise((ok, fallo) => {
+    const req = indexedDB.open(DB_NOMBRE, 1);
+    req.onupgradeneeded = () => {
+      req.result.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+    };
+    req.onsuccess = () => ok(req.result);
+    req.onerror = () => fallo(req.error);
+  });
+}
+function tx(modo, fn) {
+  return new Promise((ok, fallo) => {
+    const t = db.transaction(STORE, modo);
+    const res = fn(t.objectStore(STORE));
+    t.oncomplete = () => ok(res && 'result' in res ? res.result : undefined);
+    t.onerror = () => fallo(t.error);
+    t.onabort = () => fallo(t.error);
+  });
+}
+const dbTodas   = () => tx('readonly',  (s) => s.getAll());
+const dbAgregar = (m) => tx('readwrite', (s) => s.add(m));
+const dbGuardar = (m) => tx('readwrite', (s) => s.put(m));
+const dbBorrar  = (id) => tx('readwrite', (s) => s.delete(id));
+const dbVaciarYCargar = (lista) => tx('readwrite', (s) => { s.clear(); lista.forEach((m) => s.put(m)); });
+
+/* Copia en memoria (así compartir es instantáneo, sin esperar a la base de datos) */
+let mascotas = [];
+async function recargar() {
+  mascotas = (await dbTodas()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+}
+
+/* =====================================================================
+   Utilidades
+   ===================================================================== */
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function formatearEdad(totalMeses) {
+  const anios = Math.floor(totalMeses / 12), meses = totalMeses % 12;
+  const tA = anios === 1 ? '1 año' : `${anios} años`;
+  const tM = meses === 1 ? '1 mes' : `${meses} meses`;
+  if (anios === 0 && meses === 0) return 'Menos de 1 mes';
+  if (anios === 0) return tM;
+  if (meses === 0) return tA;
+  return `${tA} y ${tM}`;
+}
+const dos = (n) => String(n).padStart(2, '0');
+function formatearFecha(ms) {
+  const d = new Date(ms);
+  return `${dos(d.getDate())}/${dos(d.getMonth() + 1)}/${d.getFullYear()}`;
+}
+function aISO(ms) { // millis -> "aaaa-mm-dd" (hora local)
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${dos(d.getMonth() + 1)}-${dos(d.getDate())}`;
+}
+function deISO(iso) { // "aaaa-mm-dd" -> millis (mediodía local, para que no se corra de día)
+  const [a, m, d] = iso.split('-').map(Number);
+  return new Date(a, m - 1, d, 12, 0).getTime();
+}
+function tituloExamenes(estado) {
+  if (estado === 'Tomados') return 'Exámenes tomados';
+  if (estado === 'Pendientes') return 'Exámenes por tomar';
+  return null;
+}
+const OPCIONES_RESULTADOS = ['Negativo', 'SIDA', 'Leucemia'];
+const resultadosATexto = (sel) => OPCIONES_RESULTADOS.filter((o) => sel.includes(o)).join(', ');
+const textoAResultados = (t) => (t || '').split(',').map((x) => x.trim()).filter(Boolean);
+
+let avisoTimer;
+function aviso(texto) {
+  const el = document.getElementById('aviso');
+  el.textContent = texto;
+  el.classList.add('ver');
+  clearTimeout(avisoTimer);
+  avisoTimer = setTimeout(() => el.classList.remove('ver'), 2200);
+}
+
+/* =====================================================================
+   Formulario (sirve para "Nueva mascota" y para "Editar")
+   ===================================================================== */
+function estadoVacio() {
+  return {
+    fecha: aISO(Date.now()), nombre: '', especie: '', raza: '', anios: '', meses: '',
+    motivoIngreso: '', diagnostico: '', infeccioso: false,
+    retrovirales: '', resultados: [],
+    estadoExamenes: 'No', examenesPorTomar: '',
+    ecografia: '', hallazgosEcografia: '',
+    enAyuno: false, comentarios: ''
+  };
+}
+function estadoDesde(m) {
+  return {
+    fecha: aISO(m.fechaIngreso), nombre: m.nombre, especie: m.especie, raza: m.raza ?? '',
+    anios: String(Math.floor(m.edad / 12)), meses: String(m.edad % 12),
+    motivoIngreso: m.motivoIngreso ?? '', diagnostico: m.diagnostico ?? '', infeccioso: !!m.infeccioso,
+    retrovirales: m.retrovirales ?? '', resultados: textoAResultados(m.resultadosRetrovirales),
+    estadoExamenes: m.estadoExamenes || 'No', examenesPorTomar: m.examenesPorTomar ?? '',
+    ecografia: m.ecografia ?? '', hallazgosEcografia: m.hallazgosEcografia ?? '',
+    enAyuno: !!m.enAyuno, comentarios: m.comentarios ?? ''
+  };
+}
+function validar(s) {
+  const anios = s.anios.trim() === '' ? 0 : Number(s.anios);
+  const meses = s.meses.trim() === '' ? 0 : Number(s.meses);
+  const aniosOk = Number.isInteger(anios) && anios >= 0;
+  const mesesOk = Number.isInteger(meses) && meses >= 0 && meses <= 11;
+  const examenesFalta = s.estadoExamenes !== 'No' && s.examenesPorTomar.trim() === '';
+  const hallazgosFalta = s.ecografia === 'Sí' && s.hallazgosEcografia.trim() === '';
+  const ok = s.nombre.trim() !== '' && s.especie !== '' && aniosOk && mesesOk && !examenesFalta && !hallazgosFalta;
+  return { ok, anios, meses, mesesOk, aniosOk, examenesFalta, hallazgosFalta };
+}
+function aMascota(s, base) {
+  const v = validar(s);
+  const gato = s.especie === 'Gato';
+  return {
+    ...base,
+    nombre: s.nombre.trim(),
+    especie: s.especie,
+    raza: s.raza.trim() || null,
+    edad: v.anios * 12 + v.meses,
+    motivoIngreso: s.motivoIngreso.trim(),
+    diagnostico: s.diagnostico.trim(),
+    infeccioso: s.infeccioso,
+    retrovirales: gato ? (s.retrovirales || null) : null,
+    resultadosRetrovirales: gato && s.retrovirales === 'Sí' ? resultadosATexto(s.resultados) : '',
+    estadoExamenes: s.estadoExamenes,
+    examenesPorTomar: s.estadoExamenes === 'No' ? '' : s.examenesPorTomar.trim(),
+    ecografia: s.ecografia || null,
+    hallazgosEcografia: s.ecografia === 'Sí' ? s.hallazgosEcografia.trim() : '',
+    enAyuno: s.enAyuno,
+    comentarios: s.comentarios.trim(),
+    fechaIngreso: deISO(s.fecha || aISO(Date.now()))
+  };
+}
+
+function grupoRadio(k, titulo, opciones, valor) {
+  return `<fieldset><legend>${titulo}</legend>${opciones.map((o) =>
+    `<label class="opt"><input type="radio" name="${k}" data-radio="${k}" value="${esc(o)}" ${valor === o ? 'checked' : ''}><span>${esc(o)}</span></label>`
+  ).join('')}</fieldset>`;
+}
+function grupoCasillasExclusivo(k, titulo, opciones, valor) {
+  return `<fieldset><legend>${titulo}</legend>${opciones.map((o) =>
+    `<label class="opt"><input type="checkbox" data-excl="${k}" value="${esc(o)}" ${valor === o ? 'checked' : ''}><span>${esc(o)}</span></label>`
+  ).join('')}</fieldset>`;
+}
+function campoTexto(k, titulo, valor, extra = {}) {
+  const { tipo = 'text', area = false, inputmode = '', errId = '', errTexto = '', error = false } = extra;
+  const comun = `data-k="${k}" ${error ? 'aria-invalid="true"' : ''}`;
+  const control = area
+    ? `<textarea ${comun} rows="3">${esc(valor)}</textarea>`
+    : `<input type="${tipo}" ${comun} value="${esc(valor)}" ${inputmode ? `inputmode="${inputmode}"` : ''} ${tipo === 'number' ? 'min="0"' : ''} autocomplete="off">`;
+  return `<label class="campo"><span>${titulo}</span>${control}${errId ? `<small class="err" id="${errId}" ${error ? '' : 'hidden'}>${errTexto}</small>` : ''}</label>`;
+}
+
+function plantillaFormulario(s, modo) {
+  const v = validar(s);
+  const titExamenes = tituloExamenes(s.estadoExamenes);
+  const gato = s.especie === 'Gato';
+  return `
+    <label class="campo"><span>Fecha de ingreso</span>
+      <input type="date" data-k="fecha" value="${esc(s.fecha)}"></label>
+    ${campoTexto('nombre', 'Nombre', s.nombre)}
+    ${grupoRadio('especie', 'Especie', ['Perro', 'Gato'], s.especie)}
+    ${campoTexto('raza', 'Raza (opcional)', s.raza)}
+    <div class="fila2">
+      ${campoTexto('anios', 'Años', s.anios, { tipo: 'number', inputmode: 'numeric' })}
+      ${campoTexto('meses', 'Meses', s.meses, { tipo: 'number', inputmode: 'numeric', errId: 'err-meses', errTexto: 'Máximo 11', error: !v.mesesOk })}
+    </div>
+    ${campoTexto('motivoIngreso', 'Motivo de ingreso', s.motivoIngreso)}
+    ${campoTexto('diagnostico', 'Diagnóstico', s.diagnostico)}
+    <label class="opt" style="margin-top:8px"><input type="checkbox" data-bool="infeccioso" ${s.infeccioso ? 'checked' : ''}><span>Es infeccioso</span></label>
+
+    ${gato ? `
+      ${grupoRadio('retrovirales', 'Retrovirales', ['Sí', 'No', 'Pendiente'], s.retrovirales)}
+      ${s.retrovirales === 'Sí' ? `
+        <div class="sub"><span class="campo" style="margin:6px 0 0"><span style="font-size:.8rem;color:var(--muted);font-weight:600">Resultados (puedes marcar más de uno)</span></span>
+        ${OPCIONES_RESULTADOS.map((o) =>
+          `<label class="opt"><input type="checkbox" data-res="${o}" ${s.resultados.includes(o) ? 'checked' : ''}><span>${o}</span></label>`).join('')}
+        </div>` : ''}
+    ` : ''}
+
+    ${grupoRadio('estadoExamenes', 'Exámenes', ['Tomados', 'Pendientes', 'No'], s.estadoExamenes)}
+    ${titExamenes ? campoTexto('examenesPorTomar', titExamenes, s.examenesPorTomar, {
+        errId: 'err-ex', errTexto: 'Obligatorio si los exámenes están Tomados o Pendientes', error: v.examenesFalta }) : ''}
+
+    ${grupoCasillasExclusivo('ecografia', 'Ecografía', ['Sí', 'No', 'Pendiente'], s.ecografia)}
+    ${s.ecografia === 'Sí' ? campoTexto('hallazgosEcografia', '¿Qué se vio en la ecografía?', s.hallazgosEcografia, {
+        area: true, errId: 'err-hall', errTexto: 'Obligatorio si la ecografía es Sí', error: v.hallazgosFalta }) : ''}
+
+    <label class="opt" style="margin-top:8px"><input type="checkbox" data-bool="enAyuno" ${s.enAyuno ? 'checked' : ''}><span>En ayuno</span></label>
+    ${campoTexto('comentarios', 'Comentarios extras', s.comentarios, { area: true })}
+
+    <div class="acciones">
+      <button type="button" id="btn-guardar" ${v.ok ? '' : 'disabled'}>${modo === 'editar' ? 'Guardar cambios' : 'Guardar'}</button>
+      ${modo === 'editar' ? '<button type="button" class="sec" id="btn-cancelar">Cancelar</button>' : ''}
+    </div>`;
+}
+
+/** Dibuja el formulario dentro de `cont` y conecta todos sus eventos. */
+function montarFormulario(cont, s, modo, alGuardar, alCancelar) {
+  function dibujar() {
+    const y = window.scrollY;
+    cont.innerHTML = plantillaFormulario(s, modo);
+    window.scrollTo(0, y);
+  }
+  function refrescarValidacion() {
+    const v = validar(s);
+    const btn = cont.querySelector('#btn-guardar');
+    if (btn) btn.disabled = !v.ok;
+    const marca = (id, mostrar, campo) => {
+      const e = cont.querySelector('#' + id);
+      if (e) e.hidden = !mostrar;
+      const c = cont.querySelector(`[data-k="${campo}"]`);
+      if (c) mostrar ? c.setAttribute('aria-invalid', 'true') : c.removeAttribute('aria-invalid');
+    };
+    marca('err-meses', !v.mesesOk, 'meses');
+    marca('err-ex', v.examenesFalta, 'examenesPorTomar');
+    marca('err-hall', v.hallazgosFalta, 'hallazgosEcografia');
+  }
+
+  // Texto, números y fecha: solo actualizan el estado (no redibujan, para no perder el cursor)
+  cont.oninput = (e) => {
+    const k = e.target.dataset.k;
+    if (!k) return;
+    s[k] = e.target.value;
+    refrescarValidacion();
+  };
+  // Opciones y casillas: pueden mostrar u ocultar secciones, así que redibujan
+  cont.onchange = (e) => {
+    const t = e.target;
+    if (t.dataset.radio) {
+      s[t.dataset.radio] = t.value;
+      dibujar();
+    } else if (t.dataset.excl) {
+      s[t.dataset.excl] = t.checked ? t.value : '';
+      dibujar();
+    } else if (t.dataset.bool) {
+      s[t.dataset.bool] = t.checked;
+    } else if (t.dataset.res) {
+      const op = t.dataset.res;
+      if (!t.checked) s.resultados = s.resultados.filter((x) => x !== op);
+      else if (op === 'Negativo') s.resultados = ['Negativo'];
+      else s.resultados = [...s.resultados.filter((x) => x !== 'Negativo'), op];
+      dibujar();
+    }
+  };
+  cont.onclick = (e) => {
+    if (e.target.id === 'btn-guardar' && validar(s).ok) alGuardar(s);
+    if (e.target.id === 'btn-cancelar') alCancelar();
+  };
+  dibujar();
+  return { dibujar };
+}
+
+/* =====================================================================
+   Exportación a WhatsApp (mismo formato que la app Android)
+   ===================================================================== */
+function generarTextoExportacion() {
+  if (mascotas.length === 0) return 'No hay mascotas registradas.';
+  const hoy = formatearFecha(Date.now());
+
+  const infecciosos = mascotas.filter((m) => m.infeccioso)
+    .sort((a, b) => a.especie.localeCompare(b.especie, 'es'));
+  const resto = mascotas.filter((m) => !m.infeccioso);
+  const grupos = [
+    ['🐱 GATOS', resto.filter((m) => m.especie === 'Gato')],
+    ['🐶 PERROS', resto.filter((m) => m.especie === 'Perro')],
+    ['⚠ INFECCIOSOS', infecciosos]
+  ];
+
+  const L = [];
+  L.push(`🐾 MASCOTAS REGISTRADAS (${mascotas.length})`);
+  L.push(`Compartido: ${hoy}`);
+  L.push('');
+  let n = 1;
+  for (const [titulo, lista] of grupos) {
+    if (lista.length === 0) continue;
+    L.push(`${titulo} (${lista.length})`);
+    L.push('');
+    for (const m of lista) {
+      L.push(`${n}. ${m.nombre}`); n++;
+      L.push(`   Ingreso: ${formatearFecha(m.fechaIngreso)}`);
+      if (m.fechaModificacion != null) L.push(`   Turno: ${hoy}`);
+      L.push(`   Especie: ${m.especie}`);
+      L.push(`   Raza: ${m.raza ?? 'Sin raza'}`);
+      L.push(`   Edad: ${formatearEdad(m.edad)}`);
+      if (m.motivoIngreso) L.push(`   Motivo de ingreso: ${m.motivoIngreso}`);
+      if (m.diagnostico) L.push(`   Diagnóstico: ${m.diagnostico}`);
+      L.push(`   Infeccioso: ${m.infeccioso ? 'Sí' : 'No'}`);
+      if (m.especie === 'Gato') {
+        L.push(`   Retrovirales: ${m.retrovirales ?? 'Sin registrar'}`);
+        if (m.retrovirales === 'Sí' && m.resultadosRetrovirales) L.push(`   Resultados retrovirales: ${m.resultadosRetrovirales}`);
+      }
+      const tit = tituloExamenes(m.estadoExamenes);
+      if (tit && m.examenesPorTomar) L.push(`   ${tit}: ${m.examenesPorTomar}`);
+      else L.push(`   Exámenes: ${m.estadoExamenes}`);
+      L.push(`   Ecografía: ${m.ecografia ?? 'Sin registrar'}`);
+      if (m.ecografia === 'Sí' && m.hallazgosEcografia) L.push(`   Hallazgos ecografía: ${m.hallazgosEcografia}`);
+      L.push(`   En ayuno: ${m.enAyuno ? 'Sí' : 'No'}`);
+      if (m.comentarios) L.push(`   Comentarios: ${m.comentarios}`);
+      L.push('');
+    }
+  }
+  return L.join('\n');
+}
+
+async function compartirTexto() {
+  const texto = generarTextoExportacion();
+  // Primero la hoja de compartir del teléfono (ahí aparece WhatsApp); si no existe, abre WhatsApp directo.
+  if (navigator.share) {
+    try { await navigator.share({ text: texto }); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  window.location.href = 'https://wa.me/?text=' + encodeURIComponent(texto);
+}
+async function copiarTexto() {
+  const texto = generarTextoExportacion();
+  try {
+    await navigator.clipboard.writeText(texto);
+    aviso('Texto copiado');
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); aviso('Texto copiado'); } catch { aviso('No se pudo copiar'); }
+    ta.remove();
+  }
+}
+
+/* =====================================================================
+   Importar un mensaje exportado (de esta app o de la versión Android)
+   Lee el texto y lo convierte otra vez en mascotas. No usa internet ni servidores.
+   ===================================================================== */
+const sinAcentos = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+const ETIQUETAS = {
+  'ingreso': 'ingreso', 'turno': 'turno', 'especie': 'especie', 'raza': 'raza', 'edad': 'edad',
+  'motivo de ingreso': 'motivo', 'diagnostico': 'diagnostico', 'infeccioso': 'infeccioso',
+  'retrovirales': 'retro', 'resultados retrovirales': 'resretro',
+  'examenes': 'examenes', 'examenes tomados': 'ex_tomados',
+  'examenes por tomar': 'ex_pendientes', 'examenes a tomar': 'ex_pendientes',
+  'ecografia': 'eco', 'hallazgos ecografia': 'hallazgos',
+  'en ayuno': 'ayuno', 'comentarios': 'comentarios'
+};
+
+function fechaDeTexto(t) {
+  const m = /(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(t || '');
+  if (!m) return null;
+  const d = new Date(+m[3], +m[2] - 1, +m[1], 12, 0);
+  return d.getMonth() === +m[2] - 1 && d.getDate() === +m[1] ? d.getTime() : null;
+}
+function edadDeTexto(t) {
+  const n = sinAcentos(t);
+  if (n.startsWith('menos de')) return 0;
+  const a = /(\d+)\s*ano/.exec(n), m = /(\d+)\s*mes/.exec(n);
+  return (a ? +a[1] : 0) * 12 + (m ? +m[1] : 0);
+}
+function opcionSiNoPendiente(t) {
+  const n = sinAcentos(t);
+  return n === 'si' ? 'Sí' : n === 'no' ? 'No' : n === 'pendiente' ? 'Pendiente' : null;
+}
+const esSi = (t) => sinAcentos(t) === 'si';
+
+function parsearMensaje(texto) {
+  const lineas = String(texto).replace(/\r/g, '').split('\n')
+    .map((l) => l.replace(/[‎‏‪-‮]/g, '').trim());
+
+  // Una mascota empieza con "1. Nombre" y su siguiente línea no vacía es "Ingreso: ..."
+  const inicios = [];
+  lineas.forEach((l, i) => {
+    if (!/^\d+\.\s+\S/.test(l)) return;
+    let j = i + 1;
+    while (j < lineas.length && lineas[j] === '') j++;
+    if (j < lineas.length && sinAcentos(lineas[j]).startsWith('ingreso:')) inicios.push(i);
+  });
+
+  const esEncabezado = (l) => /^[^\p{L}\d]*(GATOS|PERROS|INFECCIOSOS)\s*\(\d+\)\s*$/u.test(l);
+  const mascotas = [];
+  let ignoradas = 0;
+
+  inicios.forEach((ini, k) => {
+    const fin = k + 1 < inicios.length ? inicios[k + 1] : lineas.length;
+    const nombre = lineas[ini].replace(/^\d+\.\s+/, '').trim();
+    const c = {};
+    let ultimo = null, blancos = 0;
+
+    for (let i = ini + 1; i < fin; i++) {
+      const l = lineas[i];
+      if (l === '') { if (ultimo) blancos++; continue; }
+      if (esEncabezado(l)) { ultimo = null; blancos = 0; continue; }
+      const p = l.indexOf(':');
+      const clave = p > 0 ? ETIQUETAS[sinAcentos(l.slice(0, p))] : undefined;
+      if (clave) { c[clave] = l.slice(p + 1).trim(); ultimo = clave; blancos = 0; }
+      else if (ultimo) { c[ultimo] += '\n'.repeat(blancos + 1) + l; blancos = 0; } // texto de varias líneas
+    }
+
+    const especie = (c.especie || '').trim();
+    if (!nombre || !especie) { ignoradas++; return; }
+    const gato = especie === 'Gato';
+
+    // Exámenes: acepta el formato nuevo ("Exámenes tomados: ...") y el antiguo ("Exámenes a tomar: ...")
+    const exLinea = sinAcentos(c.examenes);
+    let estadoExamenes = 'No', examenesPorTomar = '';
+    if (exLinea === 'tomados') estadoExamenes = 'Tomados';
+    else if (exLinea === 'pendientes') estadoExamenes = 'Pendientes';
+    else if (exLinea === '' && c.ex_tomados !== undefined) estadoExamenes = 'Tomados';
+    else if (exLinea === '' && c.ex_pendientes !== undefined) estadoExamenes = 'Pendientes';
+    if (estadoExamenes !== 'No') examenesPorTomar = (c.ex_tomados ?? c.ex_pendientes ?? '').trim();
+
+    const retro = gato ? opcionSiNoPendiente(c.retro) : null;
+    const eco = opcionSiNoPendiente(c.eco);
+
+    mascotas.push({
+      nombre, especie,
+      raza: c.raza && sinAcentos(c.raza) !== 'sin raza' ? c.raza : null,
+      edad: edadDeTexto(c.edad),
+      motivoIngreso: c.motivo || '',
+      diagnostico: c.diagnostico || '',
+      infeccioso: esSi(c.infeccioso),
+      retrovirales: retro,
+      resultadosRetrovirales: retro === 'Sí' ? resultadosATexto(textoAResultados(c.resretro)) : '',
+      estadoExamenes, examenesPorTomar,
+      ecografia: eco,
+      hallazgosEcografia: eco === 'Sí' ? (c.hallazgos || '') : '',
+      enAyuno: esSi(c.ayuno),
+      comentarios: c.comentarios || '',
+      fechaIngreso: fechaDeTexto(c.ingreso) ?? deISO(aISO(Date.now())),
+      fechaModificacion: fechaDeTexto(c.turno)
+    });
+  });
+  return { mascotas, ignoradas };
+}
+
+/** Identifica a una mascota: mismo nombre + misma especie + mismo día de ingreso. */
+const claveMascota = (m) => `${sinAcentos(m.nombre)}|${sinAcentos(m.especie)}|${formatearFecha(m.fechaIngreso)}`;
+
+async function importarMascotas(lista) {
+  const existentes = new Map(mascotas.map((m) => [claveMascota(m), m]));
+  let nuevas = 0, actualizadas = 0;
+  for (const m of lista) {
+    const ya = existentes.get(claveMascota(m));
+    if (ya) { await dbGuardar({ ...m, id: ya.id, fechaIngreso: ya.fechaIngreso }); actualizadas++; }
+    else { await dbAgregar(m); nuevas++; }
+  }
+  await recargar();
+  return { nuevas, actualizadas };
+}
+
+/* =====================================================================
+   Respaldo (como los datos viven solo en este teléfono, conviene guardar una copia)
+   ===================================================================== */
+function descargarRespaldo() {
+  const datos = JSON.stringify({ app: 'veterinaria', version: 1, fecha: new Date().toISOString(), mascotas }, null, 2);
+  const blob = new Blob([datos], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `veterinaria-respaldo-${aISO(Date.now())}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+async function restaurarRespaldo(archivo) {
+  try {
+    const json = JSON.parse(await archivo.text());
+    if (json.app !== 'veterinaria' || !Array.isArray(json.mascotas)) throw new Error('formato');
+    if (!confirm(`Esto reemplaza las ${mascotas.length} mascotas actuales por las ${json.mascotas.length} del respaldo. ¿Continuar?`)) return;
+    await dbVaciarYCargar(json.mascotas);
+    await recargar();
+    aviso('Respaldo restaurado');
+    render();
+  } catch {
+    alert('El archivo no es un respaldo válido de esta app.');
+  }
+}
+
+/* =====================================================================
+   Pantallas
+   ===================================================================== */
+const app = document.getElementById('app');
+let formIngreso = estadoVacio(); // se conserva si cambias de pestaña y vuelves
+
+function pantallaIngreso() {
+  app.innerHTML = '<h1>Nueva mascota</h1><div id="form"></div>';
+  montarFormulario(document.getElementById('form'), formIngreso, 'nuevo', async (s) => {
+    await dbAgregar(aMascota(s, {}));
+    await recargar();
+    aviso('Mascota guardada');
+    Object.assign(formIngreso, estadoVacio());
+    window.scrollTo(0, 0);
+    pantallaIngreso();
+  });
+}
+
+function pantallaLista() {
+  const tarjetas = mascotas.map((m) => `
+    <div class="tarjeta" data-id="${m.id}">
+      <div class="info">
+        <div class="nombre">${esc(m.nombre)}</div>
+        <div>${esc(m.especie)} · ${esc(m.raza ?? 'Sin raza')} · ${esc(formatearEdad(m.edad))}</div>
+        <div>Ingreso: ${formatearFecha(m.fechaIngreso)}</div>
+        ${m.infeccioso ? '<div class="alerta">⚠ Infeccioso</div>' : ''}
+        ${m.enAyuno ? '<div class="alerta">⚠ En ayuno</div>' : ''}
+        ${m.diagnostico ? `<div>Diagnóstico: ${esc(m.diagnostico)}</div>` : ''}
+      </div>
+      <button class="peligro" data-borrar="${m.id}">Borrar</button>
+    </div>`).join('');
+
+  app.innerHTML = `
+    <h1>Mascotas registradas (${mascotas.length})</h1>
+    <div class="barra">
+      <button id="btn-wsp" ${mascotas.length ? '' : 'disabled'}>Exportar a WhatsApp</button>
+      <button id="btn-copiar" class="sec" ${mascotas.length ? '' : 'disabled'}>Copiar texto</button>
+      <button id="btn-imp" class="sec">Importar mensaje</button>
+    </div>
+    <div id="panel-imp"></div>
+    ${mascotas.length ? tarjetas : '<p class="vacio">Todavía no hay mascotas. Agrega una en la pestaña Ingreso.</p>'}
+    <details class="respaldo">
+      <summary>Copia de seguridad</summary>
+      <p>Tus datos se guardan solo en este teléfono. Descarga un respaldo de vez en cuando; si cambias de teléfono o se borran los datos del navegador, podrás restaurarlo.</p>
+      <div class="acciones" style="margin-top:8px">
+        <button class="sec" id="btn-resp-bajar" ${mascotas.length ? '' : 'disabled'}>Descargar respaldo</button>
+        <button class="sec" id="btn-resp-subir">Restaurar respaldo</button>
+        <input type="file" id="archivo-resp" accept="application/json,.json" hidden>
+      </div>
+    </details>`;
+
+  document.getElementById('btn-wsp').onclick = compartirTexto;
+  document.getElementById('btn-copiar').onclick = copiarTexto;
+  document.getElementById('btn-imp').onclick = abrirPanelImportar;
+  document.getElementById('btn-resp-bajar').onclick = descargarRespaldo;
+  const inp = document.getElementById('archivo-resp');
+  document.getElementById('btn-resp-subir').onclick = () => inp.click();
+  inp.onchange = () => { if (inp.files[0]) restaurarRespaldo(inp.files[0]); inp.value = ''; };
+
+  app.onclick = async (e) => {
+    const borrar = e.target.closest('[data-borrar]');
+    if (borrar) {
+      e.stopPropagation();
+      const m = mascotas.find((x) => x.id === Number(borrar.dataset.borrar));
+      if (m && confirm(`¿Borrar a ${m.nombre}? Esta acción no se puede deshacer.`)) {
+        await dbBorrar(m.id);
+        await recargar();
+        pantallaLista();
+      }
+      return;
+    }
+    const t = e.target.closest('.tarjeta');
+    if (t) location.hash = '#/detalle/' + t.dataset.id;
+  };
+}
+
+function abrirPanelImportar() {
+  const panel = document.getElementById('panel-imp');
+  panel.innerHTML = `
+    <div class="panel">
+      <h2>Importar mensaje de WhatsApp</h2>
+      <p class="vacio" style="margin:0 0 8px">Copia el mensaje exportado desde WhatsApp (mantén presionado el mensaje → Copiar) y pégalo aquí.</p>
+      <textarea id="txt-imp" rows="6" placeholder="Pega aquí el mensaje"></textarea>
+      <div class="acciones">
+        <button id="btn-rev" disabled>Revisar</button>
+        <button id="btn-imp-cerrar" class="txt">Cancelar</button>
+      </div>
+      <div id="res-imp"></div>
+    </div>`;
+  const txt = document.getElementById('txt-imp');
+  txt.focus();
+  txt.oninput = () => (document.getElementById('btn-rev').disabled = txt.value.trim() === '');
+  document.getElementById('btn-imp-cerrar').onclick = () => (panel.innerHTML = '');
+  document.getElementById('btn-rev').onclick = () => revisarImportacion(txt.value);
+}
+
+function revisarImportacion(texto) {
+  const res = document.getElementById('res-imp');
+  const { mascotas: halladas, ignoradas } = parsearMensaje(texto);
+  if (halladas.length === 0) {
+    res.innerHTML = '<p class="alerta">No encontré mascotas en ese texto. Revisa que sea el mensaje completo exportado por la app.</p>';
+    return;
+  }
+  const claves = new Set(mascotas.map(claveMascota));
+  res.innerHTML = `
+    <p style="margin:8px 0 0"><b>Encontré ${halladas.length} mascota${halladas.length === 1 ? '' : 's'}.</b> Marca las que quieres importar:</p>
+    <fieldset>${halladas.map((m, i) => `
+      <label class="opt"><input type="checkbox" data-imp="${i}" checked>
+        <span>${esc(m.nombre)} · ${esc(m.especie)}<br>
+        <small>${claves.has(claveMascota(m)) ? 'Ya existe: se actualizará con estos datos' : '<span class="nueva">Nueva</span>'}</small></span></label>`).join('')}
+    </fieldset>
+    ${ignoradas ? `<p class="alerta">${ignoradas} entrada${ignoradas === 1 ? '' : 's'} no se pudo leer.</p>` : ''}
+    <div class="acciones"><button id="btn-imp-ok">Importar seleccionadas</button></div>`;
+  const ok = document.getElementById('btn-imp-ok');
+  res.onchange = () => (ok.disabled = !res.querySelector('[data-imp]:checked'));
+  ok.onclick = async () => {
+    const elegidas = [...res.querySelectorAll('[data-imp]:checked')].map((c) => halladas[+c.dataset.imp]);
+    const r = await importarMascotas(elegidas);
+    aviso(`Importadas: ${r.nuevas} nueva${r.nuevas === 1 ? '' : 's'}, ${r.actualizadas} actualizada${r.actualizadas === 1 ? '' : 's'}`);
+    pantallaLista();
+  };
+}
+
+function dato(titulo, valor) {
+  return `<div class="dato"><div class="t">${esc(titulo)}</div><div class="v">${esc(valor)}</div></div>`;
+}
+
+function pantallaDetalle(id) {
+  const m = mascotas.find((x) => x.id === id);
+  if (!m) {
+    app.innerHTML = '<p><button class="txt" id="volver">← Volver</button></p><p>Mascota no encontrada</p>';
+    document.getElementById('volver').onclick = () => (location.hash = '#/mascotas');
+    return;
+  }
+  const tit = tituloExamenes(m.estadoExamenes);
+  app.innerHTML = `
+    <p style="margin:0"><button class="txt" id="volver">← Volver</button></p>
+    <h1>${esc(m.nombre)}</h1>
+    ${dato('Fecha de ingreso', formatearFecha(m.fechaIngreso))}
+    ${dato('Especie', m.especie)}
+    ${dato('Raza', m.raza ?? 'Sin raza')}
+    ${dato('Edad', formatearEdad(m.edad))}
+    ${m.motivoIngreso ? dato('Motivo de ingreso', m.motivoIngreso) : ''}
+    ${dato('Diagnóstico', m.diagnostico || 'Sin diagnóstico')}
+    ${dato('Infeccioso', m.infeccioso ? 'Sí' : 'No')}
+    ${m.especie === 'Gato' ? dato('Retrovirales', m.retrovirales ?? 'Sin registrar') : ''}
+    ${m.especie === 'Gato' && m.retrovirales === 'Sí' && m.resultadosRetrovirales ? dato('Resultados retrovirales', m.resultadosRetrovirales) : ''}
+    ${tit && m.examenesPorTomar ? dato(tit, m.examenesPorTomar) : dato('Exámenes', m.estadoExamenes)}
+    ${dato('Ecografía', m.ecografia ?? 'Sin registrar')}
+    ${m.ecografia === 'Sí' && m.hallazgosEcografia ? dato('Hallazgos de la ecografía', m.hallazgosEcografia) : ''}
+    ${dato('En ayuno', m.enAyuno ? 'Sí' : 'No')}
+    ${m.comentarios ? dato('Comentarios', m.comentarios) : ''}
+    <div class="acciones"><button id="btn-editar">Editar</button></div>`;
+  document.getElementById('volver').onclick = () => history.length > 1 ? history.back() : (location.hash = '#/mascotas');
+  document.getElementById('btn-editar').onclick = () => (location.hash = '#/editar/' + id);
+}
+
+function pantallaEditar(id) {
+  const m = mascotas.find((x) => x.id === id);
+  if (!m) { location.hash = '#/mascotas'; return; }
+  app.innerHTML = '<h1>Editar mascota</h1><div id="form"></div>';
+  const s = estadoDesde(m);
+  montarFormulario(document.getElementById('form'), s, 'editar', async (est) => {
+    await dbGuardar({ ...aMascota(est, m), id: m.id, fechaModificacion: Date.now() });
+    await recargar();
+    aviso('Cambios guardados');
+    location.replace('#/detalle/' + id);
+  }, () => history.back());
+}
+
+/* =====================================================================
+   Navegación (con #, así el botón "atrás" del teléfono funciona)
+   ===================================================================== */
+function render() {
+  const ruta = location.hash || '#/ingreso';
+  const partes = ruta.split('/'); // ["#", "detalle", "3"]
+  const seccion = partes[1];
+  app.onclick = null;
+
+  document.getElementById('nav-ingreso').classList.toggle('activa', seccion === 'ingreso');
+  document.getElementById('nav-mascotas').classList.toggle('activa', seccion !== 'ingreso');
+
+  if (seccion === 'mascotas') pantallaLista();
+  else if (seccion === 'detalle') pantallaDetalle(Number(partes[2]));
+  else if (seccion === 'editar') pantallaEditar(Number(partes[2]));
+  else pantallaIngreso();
+}
+window.addEventListener('hashchange', () => { window.scrollTo(0, 0); render(); });
+
+/* =====================================================================
+   Inicio
+   ===================================================================== */
+(async function iniciar() {
+  try {
+    db = await abrirDB();
+    await recargar();
+    // Pide al navegador que no borre los datos si hay poco espacio
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  } catch (e) {
+    app.innerHTML = '<h1>No se pudo abrir la base de datos</h1><p>Prueba abrir la app en una ventana normal (no privada) del navegador.</p>';
+    return;
+  }
+  render();
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+})();
+</script>
+</body>
+</html>
